@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>NSL Malaysia 2026 | Netball Super League Official Dashboard</title>
+  <!-- Bootstrap 5 + Icons + Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-image: url('images/fullbackground.webp');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      color: #1E2A5E;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .main-wrapper {
+      flex: 1 0 auto;
+      width: 100%;
+    }
+
+    /* Premium Card with Blue border (footer color) */
+    .premium-card {
+      background: #FFFFFF;
+      border-radius: 32px;
+      border: 1px solid #1E2A5E;
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.05);
+      transition: all 0.35s cubic-bezier(0.2, 0, 0, 1);
+      overflow: hidden;
+      height: 100%;
+    }
+    .premium-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 28px 40px -16px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Blue border for dashboard cards */
+    .stat-premium-card {
+      background: white;
+      border-radius: 28px;
+      padding: 1.2rem;
+      transition: all 0.25s;
+      border: 1px solid #1E2A5E;
+      height: 100%;
+    }
+    .stat-premium-card:hover {
+      border-color: #FF69B4;
+      box-shadow: 0 20px 30px -15px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Team card on home page */
+    .team-card {
+      background: white;
+      border-radius: 28px;
+      padding: 1.5rem 1rem;
+      transition: all 0.25s;
+      border: 1px solid #1E2A5E;
+      height: 100%;
+      text-align: center;
+    }
+    .team-card:hover {
+      transform: translateY(-5px);
+      border-color: #FF69B4;
+      box-shadow: 0 15px 30px -12px rgba(0, 0, 0, 0.1);
+    }
+    .team-logo {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      margin-bottom: 1rem;
+      border-radius: 20px;
+      background: #F8F5F0;
+      padding: 8px;
+    }
+    .team-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #1E2A5E;
+      margin-bottom: 0;
+    }
+
+    /* Buttons */
+    .btn-primary-premium {
+      background: #FF1493;
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 10px 24px;
+      border-radius: 60px;
+      transition: all 0.25s ease;
+    }
+    .btn-primary-premium:hover {
+      background: #E0007A;
+      transform: scale(0.98);
+    }
+    .btn-outline-premium {
+      background: transparent;
+      border: 1.5px solid #FF69B4;
+      color: #FF1493;
+      font-weight: 600;
+      border-radius: 60px;
+      padding: 8px 24px;
+    }
+    .btn-logout-premium {
+      background: rgba(30, 42, 94, 0.85);
+      border: 1px solid #1E2A5E;
+      color: white;
+      font-weight: 500;
+      border-radius: 60px;
+      padding: 6px 22px;
+    }
+    .btn-logout-premium:hover {
+      background: #1E2A5E;
+    }
+
+    /* Navbar - Blue theme matching footer */
+    .navbar-premium {
+      background: rgba(255, 253, 250, 0.98);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid #1E2A5E;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.02);
+      padding: 0.7rem 0;
+    }
+    .navbar-brand {
+      font-family: 'Playfair Display', serif;
+      font-weight: 800;
+      font-size: 1.6rem;
+      background: linear-gradient(135deg, #FF1493, #FF69B4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      cursor: pointer;
+    }
+    .nav-link {
+      color: #1E2A5E !important;
+      font-weight: 500;
+      margin: 0 6px;
+      border-radius: 60px;
+      transition: 0.2s;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: rgba(30, 42, 94, 0.1);
+      color: #FF1493 !important;
+    }
+
+    /* Tables with blue border - full original data */
+    .table-premium {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+    .table-premium th {
+      background: transparent;
+      color: #1E2A5E;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 2px solid #1E2A5E;
+    }
+    .table-premium td {
+      background: #FFFFFF;
+      padding: 14px 16px;
+      color: #1E2A5E;
+      border-radius: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+      vertical-align: middle;
+    }
+
+    .progress-premium {
+      background-color: #EDE8E0;
+      border-radius: 40px;
+      height: 6px;
+    }
+    .progress-bar-premium {
+      background: linear-gradient(90deg, #FF1493, #FF69B4);
+      border-radius: 40px;
+    }
+    
+    /* Footer - Dark Blue - FIXED VISIBILITY */
+    .footer-premium {
+      background: #1E2A5E;
+      width: 100%;
+      margin-top: 3rem;
+      padding: 2rem 0;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .footer-premium::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #FF1493, #FF69B4);
+      z-index: 0;
+    }
+    .footer-premium .container {
+      position: relative;
+      z-index: 2;
+    }
+    .footer-premium .container .social-icon-premium,
+    .footer-premium .container .footer-link,
+    .footer-premium .container p {
+      position: relative;
+      z-index: 3;
+    }
+    .social-icon-premium {
+      font-size: 1.3rem;
+      margin: 0 14px;
+      color: #FFB6C1;
+      transition: 0.2s;
+      position: relative;
+      z-index: 3;
+    }
+    .social-icon-premium:hover {
+      color: #FF69B4;
+      transform: translateY(-3px);
+    }
+    .footer-link {
+      color: #FFB6C1;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.2s;
+      cursor: pointer;
+      position: relative;
+      z-index: 3;
+    }
+    .footer-link:hover {
+      color: #FF69B4;
+      text-decoration: underline;
+    }
+    .footer-premium .container p {
+      color: #FFB6C1;
+      opacity: 0.9 !important;
+      margin-bottom: 0;
+      font-size: 0.85rem;
+    }
+    
+    /* Player image cards */
+    .player-img-card {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #1E2A5E;
+      background: #f0f0f0;
+      margin-bottom: 12px;
+    }
+    .team-img-card {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 20px;
+      border: 2px solid #1E2A5E;
+    }
+    .champion-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 24px;
+      border: 3px solid #1E2A5E;
+    }
+    
+    /* Home Hero Section */
+    .hero-section {
+      background-size: cover;
+      background-position: center;
+      border-radius: 32px;
+      padding: 5rem 2rem;
+      position: relative;
+      isolation: isolate;
+      margin-bottom: 2rem;
+    }
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(30, 42, 94, 0.75);
+      border-radius: 32px;
+      z-index: -1;
+    }
+    
+    .auth-premium {
+      background: white;
+      border-radius: 40px;
+      padding: 2rem;
+      box-shadow: 0 30px 50px -25px rgba(0, 0, 0, 0.08);
+      border: 1px solid #1E2A5E;
+    }
+    .form-premium {
+      background: #FEFCF8;
+      border: 1px solid #1E2A5E;
+      border-radius: 32px;
+      padding: 12px 20px;
+    }
+    .form-premium:focus {
+      border-color: #FF1493;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
+    }
+    
+    .accordion-premium .accordion-item {
+      background: transparent;
+      border: none;
+      margin-bottom: 12px;
+    }
+    .accordion-premium .accordion-button {
+      background: white;
+      border-radius: 60px !important;
+      font-weight: 700;
+      color: #FF1493;
+      border: 1px solid #1E2A5E;
+    }
+    .accordion-premium .accordion-body {
+      background: #FEFCF9;
+      border-radius: 28px;
+      margin-top: 6px;
+      border: 1px solid #1E2A5E;
+    }
+    
+    .heading-fancy {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+    }
+    
+    .text-gradient-premium {
+      background: linear-gradient(135deg, #FF1493, #FF69B4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    /* Equal height for chart cards */
+    .equal-height {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .chart-wrapper {
+      flex: 1;
+    }
+    
+    @media (max-width: 768px) {
+      .team-logo {
+        width: 70px;
+        height: 70px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="navbar navbar-expand-lg navbar-premium fixed-top px-3 py-2">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" id="homeNavBtn">
+      <i class="fas fa-crown me-2" style="color:#FF1493;"></i> NSL MALAYSIA
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" id="navbarTogglerBtn">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center gap-1" id="navMenu">
+        <li class="nav-item"><a class="nav-link" href="#" data-page="home">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-page="login">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-page="dashboard">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-page="topPlayers">Top Players</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-page="matches">Match Results</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-page="standings">Standings</a></li>
+        <li class="nav-item ms-2" id="logoutNavItem" style="display: none;">
+          <button id="logoutButton" class="btn-logout-premium ms-2"><i class="fas fa-sign-out-alt me-1"></i> Log Out</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="main-wrapper">
+  <div class="container pt-5 mt-5 page-content" id="mainContent"></div>
+</div>
+
+<!-- REGISTRATION MODAL -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 40px; border: 1px solid #1E2A5E; background: white;">
+      <div class="modal-header border-0 pb-0 pt-4 px-4">
+        <h5 class="modal-title fw-bold heading-fancy"><i class="fas fa-id-card me-2" style="color:#FF1493;"></i>Join NSL Insider</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 pb-4">
+        <form id="modalRegisterForm">
+          <div class="mb-3"><label class="small fw-semibold">Full Name</label><input type="text" id="modalFullname" class="form-control form-premium" required></div>
+          <div class="mb-3"><label class="small fw-semibold">Username</label><input type="text" id="modalRegUsername" class="form-control form-premium" required></div>
+          <div class="mb-4"><label class="small fw-semibold">Password</label><input type="password" id="modalRegPassword" class="form-control form-premium" required></div>
+          <button type="submit" class="btn btn-primary-premium w-100 py-2">Register Account →</button>
+          <div id="modalRegMsg" class="mt-3 text-center small"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER with quick links - FIXED VISIBILITY -->
+<footer class="footer-premium position-relative">
+  <div class="container text-center">
+    <div class="d-flex flex-wrap justify-content-center gap-4 mb-3">
+      <a href="https://www.instagram.com/nsl.my?igsh=NGNjamZraTV3ZnF0" target="_blank" class="social-icon-premium"><i class="fab fa-instagram fa-lg"></i></a>
+    </div>
+    <div class="d-flex flex-wrap justify-content-center gap-3 mb-3">
+      <span class="footer-link" data-page="home">Home</span>
+      <span class="footer-link" data-page="dashboard">Dashboard</span>
+      <span class="footer-link" data-page="topPlayers">Top Players</span>
+      <span class="footer-link" data-page="matches">Match Results</span>
+      <span class="footer-link" data-page="standings">Standings</span>
+    </div>
+    <p class="mb-0 small">© 2026 NETBALL SUPER LEAGUE MALAYSIA | Analytics Dashboard</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // AUTH & CORE DATA
+  const HARDCODED_CRED = { username: "admin", password: "nsl2026" };
+  let currentUser = null;
+
+  function closeMobileMenu() {
+    if (window.innerWidth < 992) {
+      const bsCollapse = bootstrap.Collapse.getInstance(document.getElementById('mainNavbar'));
+      if (bsCollapse) bsCollapse.hide();
+    }
+  }
+
+  function showToast(msg, type = "info") {
+    const toastDiv = document.createElement('div');
+    let borderColor = "#FF1493";
+    if(type === "danger") borderColor = "#dc3545";
+    toastDiv.className = `alert alert-${type === "warning" ? "warning" : "danger"} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-5`;
+    toastDiv.style.zIndex = "9999";
+    toastDiv.style.background = "#FFFFFF";
+    toastDiv.style.border = `1px solid ${borderColor}`;
+    toastDiv.style.borderRadius = "60px";
+    toastDiv.style.padding = "12px 28px";
+    toastDiv.innerHTML = `${msg} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    document.body.appendChild(toastDiv);
+    setTimeout(() => toastDiv.remove(), 3000);
+  }
+
+  function updateLogoutButtonVisibility() {
+    const logoutBtnContainer = document.getElementById('logoutNavItem');
+    if (logoutBtnContainer) logoutBtnContainer.style.display = currentUser ? "flex" : "none";
+    const loginNav = document.querySelector('#navMenu .nav-link[data-page="login"]');
+    if (loginNav) loginNav.style.display = currentUser ? "none" : "block";
+  }
+
+  function logoutUser() { currentUser = null; showToast("Secure logout complete", "warning"); renderPage("home"); updateLogoutButtonVisibility(); closeMobileMenu(); }
+  
+  function renderPage(pageId) {
+    const container = document.getElementById("mainContent");
+    if (!container) return;
+    if (!currentUser && pageId !== "login" && pageId !== "home") { 
+      showToast("Please authenticate to access NSL Malaysia data", "danger"); 
+      pageId = "login"; 
+    }
+    if (pageId === "home") renderHomePage(container);
+    else if (pageId === "login") renderLoginPage(container);
+    else if (pageId === "dashboard") renderDashboard(container);
+    else if (pageId === "topPlayers") renderTopPlayers(container);
+    else if (pageId === "matches") renderMatchResults(container);
+    else if (pageId === "standings") renderStandings(container);
+    updateActiveNav(pageId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    closeMobileMenu();
+  }
+  
+  function updateActiveNav(activeId) {
+    document.querySelectorAll('#navMenu .nav-link, .footer-link').forEach(link => {
+      const attr = link.getAttribute('data-page');
+      if (attr === activeId) link.classList.add('active');
+      else link.classList.remove('active');
+    });
+  }
+
+  // List of all NSL Teams with logos (placeholder images - easily replaceable)
+  const teamsData = [
+  { name: "Terengganu Marvels", logo: "images/Terengganumarvels.jpg" },
+  { name: "Johor Jewels", logo: "images/Johorjewels.jpg" },
+  { name: "KL Wildcats", logo: "images/KLwildcats.jpg" },
+  { name: "Kedah Sunshine", logo: "images/Kedahsunshine.png" },
+  { name: "Perak Phoenix", logo: "images/Perakphoenix.png" },
+  { name: "Pahang Tulips", logo: "images/Pahangtulips.jpg" },
+  { name: "Melaka Mystics", logo: "images/Melakamystic.png" },
+  { name: "Selangor Angels", logo: "images/Selangorangels.png" }
+];
+
+  // HOME PAGE with Teams section (replaces League Stars)
+  function renderHomePage(container) {
+    let teamsHtml = '';
+    teamsData.forEach(team => {
+      teamsHtml += `
+        <div class="col-lg-3 col-md-4 col-6 mb-4">
+          <div class="team-card">
+            <img src="${team.logo}" alt="${team.name} logo" class="team-logo">
+            <h5 class="team-name">${team.name}</h5>
+          </div>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = `
+      <div class="hero-section" style="background-image: url('images/nslbanner.jpg');">
+        <div class="text-white text-center">
+          <h1 class="display-4 fw-bold heading-fancy">Netball Super League Malaysia<br>Analytics Dashboard</h1>
+          <p class="lead mt-3">Explore league standings, top players, and match performance through an interactive sports analytics platform.</p>
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-12 text-center mb-4">
+          <h2 class="heading-fancy"> NSL Teams</h2>
+          <hr style="border-color:#1E2A5E; width:80px; margin:0 auto;">
+          <p class="text-muted mt-2">8 Teams. One Championship.</p>
+        </div>
+        ${teamsHtml}
+      </div>
+    `;
+  }
+
+  // LOGIN PAGE with Logo image
+  function renderLoginPage(container) {
+    container.innerHTML = `
+      <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+        <div class="col-md-6 col-lg-5">
+          <div class="auth-premium text-center">
+           <img src="images/nsllogo.jpg" alt="NSL Logo" style="width:140px; margin-bottom:0px;">
+            <h2 class="heading-fancy fw-bold" style="color:#1E2A5E;">NSL <span class="text-gradient-premium">2026</span></h2>
+            <p class="text-secondary-emphasis small">Official Performance Dashboard</p>
+            <form id="loginForm">
+              <div class="mb-3"><input type="text" id="loginUsername" class="form-control form-premium" placeholder="Username (admin)" required></div>
+              <div class="mb-4"><input type="password" id="loginPassword" class="form-control form-premium" placeholder="Password (nsl2026)" required></div>
+              <button type="submit" class="btn btn-primary-premium w-100 py-2">Access Dashboard →</button>
+              <div id="loginError" class="mt-2 small text-danger"></div>
+              <div class="mt-4"><button type="button" id="openRegisterBtnFromLogin" class="btn-outline-premium">Create New Profile</button></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = document.getElementById('loginUsername').value.trim();
+      const pwd = document.getElementById('loginPassword').value.trim();
+      if (user === HARDCODED_CRED.username && pwd === HARDCODED_CRED.password) {
+        currentUser = user; showToast("Welcome to NSL 2026 Analytics", "warning"); updateLogoutButtonVisibility(); setTimeout(() => renderPage("dashboard"), 600);
+      } else { document.getElementById('loginError').innerHTML = "Invalid credentials. Use admin / nsl2026"; showToast("Authentication failed", "danger"); }
+    });
+    document.getElementById('openRegisterBtnFromLogin').onclick = () => { new bootstrap.Modal(document.getElementById('registerModal')).show(); };
+  }
+
+  function initModalRegistration() {
+    const form = document.getElementById('modalRegisterForm');
+    if (!form) return;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const full = document.getElementById('modalFullname').value.trim();
+      const user = document.getElementById('modalRegUsername').value.trim();
+      const pass = document.getElementById('modalRegPassword').value.trim();
+      if (!full || !user || !pass) { document.getElementById('modalRegMsg').innerHTML = '<span class="text-danger">All fields required</span>'; return; }
+      document.getElementById('modalRegMsg').innerHTML = '<span class="text-success">Registration successful!</span>';
+      showToast("Account created. Please sign in.", "success");
+      setTimeout(() => { 
+        const modal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
+        if (modal) modal.hide();
+        renderPage("login"); 
+      }, 1500);
+    });
+  }
+
+  let pointsChart = null, winPieChart = null;
+  
+  // DASHBOARD - equal height for both chart cards
+  function renderDashboard(container) {
+    container.innerHTML = `
+      <div class="row g-4">
+        <div class="col-12"><h2 class="heading-fancy fw-bold"><i class="fas fa-chart-line me-2" style="color:#FF1493;"></i>Season 2026 · Command Centre</h2><hr style="border-color:#1E2A5E;"></div>
+        <div class="col-md-3 col-6"><div class="stat-premium-card text-center"><i class="fas fa-crown fa-2x" style="color:#FF1493;"></i><h5 class="mt-2">League Leader</h5><h4 class="text-gradient-premium">Terengganu Marvels</h4></div></div>
+        <div class="col-md-3 col-6"><div class="stat-premium-card text-center"><i class="fas fa-calendar-alt fa-2x"></i><h5 class="mt-2">Total Matches</h5><h3 class="fw-bold">30</h3><small>18 Apr - 9 May</small></div></div>
+        <div class="col-md-3 col-6"><div class="stat-premium-card text-center"><i class="fas fa-fire fa-2x" style="color:#FF1493;"></i><h5 class="mt-2">Highest Scoring</h5><h4>Terengganu Marvels</h4></div></div>
+        <div class="col-md-3 col-6"><div class="stat-premium-card text-center"><i class="fas fa-trophy fa-2x" style="color:#FF1493;"></i><h5 class="mt-2">NSL Champion 2026</h5><h4 class="fw-bold text-gradient-premium">Terengganu Marvels</h4></div></div>
+
+        <div class="col-12 mt-2"><div class="premium-card p-4"><div class="row align-items-center"><div class="col-lg-7 col-md-6"><i class="fas fa-star fa-2x" style="color:#FF1493;"></i><h3 class="heading-fancy d-inline-block ms-2">NSL CHAMPION 2026: Terengganu Marvels</h3><div class="mvp-premium p-3 rounded-4 mt-3" style="background:#F8F5F0; border-left:4px solid #FF1493;"><strong>Final Match:</strong> Terengganu Marvels vs Johor Jewels &nbsp;|&nbsp; Shooting Accuracy: 95% | Super Shot Accuracy: 50%</div></div><div class="col-lg-5 col-md-6"><img src="images/terengganumarvelschampion.jpg" class="champion-img" alt="NSL Champion 2026 - Terengganu Marvels" style="height:280px; width:100%; object-fit:cover;"></div></div></div></div>
+
+        <div class="col-lg-6 mt-4"><div class="premium-card p-3 equal-height"><h5 class="fw-bold"><i class="fas fa-chart-bar me-2"></i>Team Points Comparison (2026)</h5><div class="chart-wrapper"><canvas id="pointsChartCanvas" style="max-height:260px; width:100%"></canvas></div></div></div>
+        <div class="col-lg-6 mt-4"><div class="premium-card p-3 equal-height"><h5 class="fw-bold"><i class="fas fa-chart-pie me-2"></i>Win Distribution by Team</h5><div class="chart-wrapper"><canvas id="winPieChartCanvas" style="max-height:260px; width:100%"></canvas></div><div class="small text-center mt-2">Based on total wins (Regular Season)</div></div></div>
+        
+        <div class="col-12 mt-3"><div class="premium-card p-3"><h5><i class="fas fa-chart-simple me-2"></i>Average (AVG) by Team</h5><div class="table-responsive"><table class="table-premium w-100" style="border-spacing: 0 4px; margin-bottom: 0;"><thead><tr><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Team</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">AVG Score</th></tr></thead><tbody>
+  <tr><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;"><strong>Terengganu Marvels</strong></td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">153.14</td></tr>
+  <tr><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;"><strong>Johor Jewels</strong></td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">162.62</td></tr>
+  <tr><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;"><strong>KL Wildcats</strong></td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">130.74</td></tr>
+  <tr><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;"><strong>Kedah Sunshine</strong></td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">110.03</td></tr>
+  <tr><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;"><strong>Perak Phoenix</strong></td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">75.5</td></tr>
+  <tr><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;"><strong>Pahang Tulips</strong></td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">88.71</td></tr>
+  <tr><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;"><strong>Melaka Mystics</strong></td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">74.63</td></tr>
+  <tr><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;"><strong>Selangor Angels</strong></td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">50.2</td></tr>
+</tbody></table></div></div></div>
+    `;
+    const ctxBar = document.getElementById('pointsChartCanvas').getContext('2d');
+    if (pointsChart) pointsChart.destroy();
+    pointsChart = new Chart(ctxBar, { type: 'bar', data: { labels: ['Terengganu', 'Johor', 'KL Wildcats', 'Kedah', 'Perak', 'Pahang', 'Melaka', 'Selangor'], datasets: [{ label: 'Points', data: [21,18,12,12,9,6,6,0], backgroundColor: '#1E2A5E', borderRadius: 12 }] }, options: { responsive: true, maintainAspectRatio: true } });
+    const ctxPie = document.getElementById('winPieChartCanvas').getContext('2d');
+    if (winPieChart) winPieChart.destroy();
+    winPieChart = new Chart(ctxPie, { type: 'pie', data: { labels: ['Terengganu Marvels (7 wins)', 'Johor Jewels (6 wins)', 'KL Wildcats (4 wins)', 'Kedah Sunshine (4 wins)', 'Others (combined)'], datasets: [{ data: [7,6,4,4,9], backgroundColor: ['#1E2A5E','#3B5284','#5B7FB8','#7EA9E0','#B2C9F0'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } } });
+  }
+
+  // TOP PLAYERS with images
+ function renderTopPlayers(container) {
+  container.innerHTML = `
+  <div class="premium-card p-4" style="background-color: #f1f1f1; border-radius: 8px;">
+    <h2 class="heading-fancy mb-4" style="color: #1E2A5E; font-weight: bold; text-align: center;">Elite Players 2026</h2>
+    
+    <!-- Row 1: 3 cards centered -->
+    <div class="row g-4 justify-content-center" style="padding: 0 15px;">
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="player-card" style="background:#ffffff; border:2px solid #1E2A5E; padding:0; text-align:left; height:100%; transition: all 0.3s ease; cursor:default;" 
+             onmouseover="this.style.borderColor='#FF1493'; this.style.boxShadow='0 8px 20px rgba(255,20,147,0.15)';" 
+             onmouseout="this.style.borderColor='#1E2A5E'; this.style.boxShadow='none';">
+          <div style="padding:0; margin:0; background-color:#f8f5f0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+            <img src="images/mvpfariha.webp" style="width:100%; aspect-ratio:1/1; object-fit:cover; display:block; image-rendering:auto;" loading="lazy">
+          </div>
+          <div style="padding: 0.8rem 1rem 1rem 1rem;">
+            <h5 style="color:#1E2A5E; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">MVP</h5>
+            <p style="margin-bottom:3px; font-size:0.85rem; color:#222;"><strong>Fariha Razak</strong></p>
+            <p style="margin-bottom:3px; font-size:0.7rem; color:#666; line-height:1.3;">Johor Jewels | WA/C</p>
+            <p style="margin-bottom:0; font-size:0.65rem; color:#FF1493; font-weight:500;">GA:81 | INT:15 | DEF:23 | CPR:130</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="player-card" style="background:#ffffff; border:2px solid #1E2A5E; padding:0; text-align:left; height:100%; transition: all 0.3s ease; cursor:default;" 
+             onmouseover="this.style.borderColor='#FF1493'; this.style.boxShadow='0 8px 20px rgba(255,20,147,0.15)';" 
+             onmouseout="this.style.borderColor='#1E2A5E'; this.style.boxShadow='none';">
+          <div style="padding:0; margin:0; background-color:#f8f5f0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+            <img src="images/bestattacker.webp" style="width:100%; aspect-ratio:1/1; object-fit:cover; display:block; image-rendering:auto;" loading="lazy">
+          </div>
+          <div style="padding: 0.8rem 1rem 1rem 1rem;">
+            <h5 style="color:#1E2A5E; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">Best Attacker</h5>
+            <p style="margin-bottom:3px; font-size:0.85rem; color:#222;"><strong>Amina Ahmad</strong></p>
+            <p style="margin-bottom:3px; font-size:0.7rem; color:#666; line-height:1.3;">KL Wildcats | GA</p>
+            <p style="margin-bottom:0; font-size:0.65rem; color:#FF1493; font-weight:500;">G:32 | GA:107 | REB:2 | CPR:111</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="player-card" style="background:#ffffff; border:2px solid #1E2A5E; padding:0; text-align:left; height:100%; transition: all 0.3s ease; cursor:default;" 
+             onmouseover="this.style.borderColor='#FF1493'; this.style.boxShadow='0 8px 20px rgba(255,20,147,0.15)';" 
+             onmouseout="this.style.borderColor='#1E2A5E'; this.style.boxShadow='none';">
+          <div style="padding:0; margin:0; background-color:#f8f5f0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+            <img src="images/bestshooter.webp" style="width:100%; aspect-ratio:1/1; object-fit:cover; display:block; image-rendering:auto;" loading="lazy">
+          </div>
+          <div style="padding: 0.8rem 1rem 1rem 1rem;">
+            <h5 style="color:#1E2A5E; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">Best Shooter</h5>
+            <p style="margin-bottom:3px; font-size:0.85rem; color:#222;"><strong>Maisarah Affandi</strong></p>
+            <p style="margin-bottom:3px; font-size:0.7rem; color:#666; line-height:1.3;">Terengganu Marvels | GS</p>
+            <p style="margin-bottom:0; font-size:0.65rem; color:#FF1493; font-weight:500;">G:184 | A:92 | REB:12 | SS:54</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Row 2: 2 cards centered -->
+    <div class="row g-4 justify-content-center" style="padding: 0 15px; margin-top: 0;">
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="player-card" style="background:#ffffff; border:2px solid #1E2A5E; padding:0; text-align:left; height:100%; transition: all 0.3s ease; cursor:default;" 
+             onmouseover="this.style.borderColor='#FF1493'; this.style.boxShadow='0 8px 20px rgba(255,20,147,0.15)';" 
+             onmouseout="this.style.borderColor='#1E2A5E'; this.style.boxShadow='none';">
+          <div style="padding:0; margin:0; background-color:#f8f5f0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+            <img src="images/bestdefender.webp" style="width:100%; aspect-ratio:1/1; object-fit:cover; display:block; image-rendering:auto;" loading="lazy">
+          </div>
+          <div style="padding: 0.8rem 1rem 1rem 1rem;">
+            <h5 style="color:#1E2A5E; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">Best Defender</h5>
+            <p style="margin-bottom:3px; font-size:0.85rem; color:#222;"><strong>Adalia Jasmine</strong></p>
+            <p style="margin-bottom:3px; font-size:0.7rem; color:#666; line-height:1.3;">Terengganu Marvels | GD</p>
+            <p style="margin-bottom:0; font-size:0.65rem; color:#FF1493; font-weight:500;">CPR:27 | REB:5 | INT:31 | DEF:62</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="player-card" style="background:#ffffff; border:2px solid #1E2A5E; padding:0; text-align:left; height:100%; transition: all 0.3s ease; cursor:default;" 
+             onmouseover="this.style.borderColor='#FF1493'; this.style.boxShadow='0 8px 20px rgba(255,20,147,0.15)';" 
+             onmouseout="this.style.borderColor='#1E2A5E'; this.style.boxShadow='none';">
+          <div style="padding:0; margin:0; background-color:#f8f5f0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+            <img src="images/bestimport.webp" style="width:100%; aspect-ratio:1/1; object-fit:cover; display:block; image-rendering:auto;" loading="lazy">
+          </div>
+          <div style="padding: 0.8rem 1rem 1rem 1rem;">
+            <h5 style="color:#1E2A5E; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">Best Import</h5>
+            <p style="margin-bottom:3px; font-size:0.85rem; color:#222;"><strong>Laura Langman</strong></p>
+            <p style="margin-bottom:3px; font-size:0.7rem; color:#666; line-height:1.3;">Johor Jewels | C/WA</p>
+            <p style="margin-bottom:0; font-size:0.65rem; color:#FF1493; font-weight:500;">GA:132 | CPR:7 | INT:23 | DEF:42</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Top 4 Teams Lineup - Tighter spacing -->
+<hr style="border-color:#1E2A5E; margin: 1.5rem 0 0.8rem 0;">
+<h4 class="heading-fancy" style="text-align: center; margin-bottom: 0.5rem;">Top 4 Teams Lineup</h4>
+<div class="accordion accordion-premium" id="lineupAccordion" style="padding: 0 15px;">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapse1">Terengganu Marvels</button>
+    </h2>
+    <div id="collapse1" class="collapse show">
+      <div class="accordion-body" style="padding: 0.8rem 1rem 0.8rem 1rem;">
+        <img src="images/tmteam.webp" style="width:60%; max-width:500px; aspect-ratio:16/9; object-fit:cover; border-radius:12px; border:2px solid #1E2A5E; margin:0 auto 6px auto; display:block;">
+        <div style="text-align:center; font-size:0.9rem; line-height:1.5;">
+          GK: CORNELIA TJATJIU | GD: ADALIA JASMINE | WD: NAJIIHA IMAN | C: NURUL ANISHA | WA: FATIN NAJIHA | GA: TENDAI MASAMBA | GS: SITI MAISARAH
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#collapse2">Johor Jewels</button>
+    </h2>
+    <div id="collapse2" class="collapse">
+      <div class="accordion-body" style="padding: 0.8rem 1rem 0.8rem 1rem;">
+        <img src="images/jjteam.webp" style="width:60%; max-width:500px; aspect-ratio:16/9; object-fit:cover; border-radius:12px; border:2px solid #1E2A5E; margin:0 auto 6px auto; display:block;">
+        <div style="text-align:center; font-size:0.9rem; line-height:1.5;">
+          GK: ASHWINII | GD: SYAFAZLIYANA | WD: LAURA LANGMAN | C: FARIHA RAZAK | WA: MAISARA | GA: GRETEL BUETA | GS: AN NAJWA
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#collapse3">KL Wildcats</button>
+    </h2>
+    <div id="collapse3" class="collapse">
+      <div class="accordion-body" style="padding: 0.8rem 1rem 0.8rem 1rem;">
+        <img src="images/klwildteam.webp" style="width:60%; max-width:500px; aspect-ratio:16/9; object-fit:cover; border-radius:12px; border:2px solid #1E2A5E; margin:0 auto 6px auto; display:block;">
+        <div style="text-align:center; font-size:0.9rem; line-height:1.5;">
+          GK: ZAHIRAH | GD: AKITTO CHRISTINE | WD: YAP SUO KUEN | C: ROZLIANA | WA: RAIHANA SYAFINA | GA: SITI AMINAH | GS: NASSANGA
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#collapse4">Kedah Sunshine</button>
+    </h2>
+    <div id="collapse4" class="collapse">
+      <div class="accordion-body" style="padding: 0.8rem 1rem 0.8rem 1rem;">
+        <img src="images/kedahteam.webp" style="width:60%; max-width:500px; aspect-ratio:16/9; object-fit:cover; border-radius:12px; border:2px solid #1E2A5E; margin:0 auto 6px auto; display:block;">
+        <div style="text-align:center; font-size:0.9rem; line-height:1.5;">
+          GK: NURIZ SHAZLEEN | GD: JEANTE STRYDOM | WD: NUR AQIDAH | C: UMAIRAH HISHAM | WA: NURAIN HUMAIRA | GA: NURSOLIEHA | GS: KALIFA MALIKA
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>`;
+}
+
+  // MATCH RESULTS - FULL ORIGINAL DATA
+  function renderMatchResults(container) {
+    const matches = [
+      { match: "Melaka Mystics vs Pahang Tulips", winner: "Melaka Mystics", score: "50-55", date: "Week 1" },
+      { match: "Johor Jewels vs Selangor Angels", winner: "Johor Jewels", score: "73-33", date: "Week 1" },
+      { match: "Perak Phoenix vs KL Wildcats", winner: "KL Wildcats", score: "33-62", date: "Week 1" },
+      { match: "Kedah Sunshine vs Terengganu Marvels", winner: "Terengganu Marvels", score: "43-59", date: "Week 1" },
+      { match: "Pahang Tulips vs Selangor Angels", winner: "Pahang Tulips", score: "62-35", date: "Week 2 Sat" },
+      { match: "Kedah Sunshine vs Melaka Mystics", winner: "Kedah Sunshine", score: "63-41", date: "Week 2 Sat" },
+      { match: "KL Wildcats vs Terengganu Marvels", winner: "Terengganu Marvels", score: "44-46", date: "Week 2 Sat" },
+      { match: "Perak Phoenix vs Johor Jewels", winner: "Johor Jewels", score: "24-71", date: "Week 2 Sat" },
+      { match: "Melaka Mystics vs KL Wildcats", winner: "KL Wildcats", score: "29-62", date: "Week 2 Sun" },
+      { match: "Perak Phoenix vs Selangor Angels", winner: "Perak Phoenix", score: "45-37", date: "Week 2 Sun"}, 
+      { match: "Johor Jewels vs Kedah Sunshine", winner: "Johor Jewels", score: "72-37", date: "Week 2 Sun" },
+      { match: "Terengganu Marvels vs Pahang Tulips", winner: "Terengganu Marvels", score: "63-36", date: "Week 2 Sun" },
+      { match: "KL Wildcats vs Pahang Tulips", winner: "KL Wildcats", score: "62-42", date: "Week 3 Fri" },
+      { match: "Melaka Mystics vs Selangor Angels", winner: "Melaka Mystics", score: "54-38", date: "Week 3 Fri"},
+      { match: "Johor Jewels vs Terengganu Marvels", winner: "Terengganu Marvels", score: "55-59", date: "Week 3 Fri" },
+      { match: "Kedah Sunshine vs Perak Phoenix", winner: "Perak Phoenix", score: "36-43", date: "Week 3 Fri"},
+      { match: "Terengganu Marvels vs Selangor Angels", winner: "Terengganu Marvels", score: "71-26", date: "Week 3 Sat" },
+      { match: "Johor Jewels vs Pahang Tulips", winner: "Johor Jewels", score: "77-54", date: "Week 3 Sun"},
+      { match: "KL Wildcats vs Kedah Sunshine", winner: "Kedah Sunshine", score: "44-58", date: "Week 3 Sun"},
+      { match: "Melaka Mystics vs Perak Phoenix", winner: "Perak Phoenix", score: "39-52", date: "Week3 Sat"},
+      { match: "Selangor Angels vs Kedah Sunshine", winner: "Kedah Sunshine", score: "38-88", date: "Week 3 Sun" },
+      { match: "Pahang Tulips vs Perak Phoenix", winner: "Pahang Tulips", score: "52-41", date: "Week 3 Sun" },
+      { match: "Terengganu Marvels vs Melaka Mystics", winner: "Terengganu Marvels", score: "63-40", date: "Week 3 Sun" },
+      { match: "Johor Jewels vs KL Wildcats", winner: "Johor Jewels", score: "66-50", date: "Week 3 Sun" },
+      { match: "Semi Final: Terengganu Marvel vs Kedah Sunshine", winner: "Terengganu Marvels", score: "60-46", date: "Semi Final" },
+      { match: "Semi Final: Johor Jewels vs KL Wildcats", winner: "Johor Jewels", score: "65-48", date: "Semi Final" },
+      { match: "3rd/4th: Kedah Sunshine vs KL Wildcats", winner: "KL Wildcats", score: "39-60", date: "Placement" },
+      { match: "FINAL: Terengganu Marvels vs Johor Jewels", winner: "Terengganu Marvels", score: "70-63", date: "GRAND FINAL" }
+    ];
+    let rows = ''; 
+    matches.forEach(m => { 
+      rows += `<tr><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">${m.match}</td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px; color:#FF1493; font-weight:bold;">${m.winner}</td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">${m.score}</td><td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">${m.date}</td></tr>`; 
+    });
+    container.innerHTML = `<div class="premium-card p-4"><h2 class="heading-fancy"><i class="fas fa-calendar-check me-2" style="color:#FF1493;"></i>Complete Match Results 2026</h2><div class="table-responsive mt-3"><table class="table-premium w-100" style="border-spacing: 0 4px; margin-bottom: 0;"><thead><tr><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Match</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Winner</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Score</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Round</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+  // STANDINGS with percentage on Form column
+  function renderStandings(container) {
+    const teams = [
+      { rank:1, name:"Terengganu Marvels", played:7, won:7, lost:0, points:21, perc:100 },
+      { rank:2, name:"Johor Jewels", played:7, won:6, lost:1, points:18, perc:85.7 },
+      { rank:3, name:"KL Wildcats", played:7, won:4, lost:3, points:12, perc:57.1 },
+      { rank:4, name:"Kedah Sunshine", played:7, won:4, lost:3, points:12, perc:57.1 },
+      { rank:5, name:"Perak Phoenix", played:7, won:3, lost:4, points:9, perc:42.9 },
+      { rank:6, name:"Pahang Tulips", played:7, won:2, lost:5, points:6, perc:28.6 },
+      { rank:7, name:"Melaka Mystics", played:7, won:2, lost:5, points:6, perc:28.6 },
+      { rank:8, name:"Selangor Angels", played:7, won:0, lost:7, points:0, perc:0 }
+    ];
+    let rows = ''; 
+    teams.forEach(t => { 
+      rows += `<tr>
+        <td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;"><strong>${t.rank}</strong></td>
+        <td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">${t.name}</td>
+        <td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">${t.played}</td>
+        <td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">${t.won}</td>
+        <td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">${t.lost}</td>
+        <td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px; color:#FF1493; font-weight:bold;">${t.points}</td>
+        <td style="padding: 6px 12px; font-size:0.9rem; border-radius: 12px;">
+          <div class="progress-premium" style="height:6px; background-color:#EDE8E0; border-radius:40px; overflow:hidden;">
+            <div class="progress-bar-premium" style="width:${t.perc}%; height:100%; background: linear-gradient(90deg, #FF1493, #FF69B4); border-radius:40px; transition: width 0.6s ease;"></div>
+          </div>
+          <small class="text-muted" style="font-size:0.7rem;">${t.perc}% win</small>
+        </td>
+      </tr>`; 
+    });
+    container.innerHTML = `<div class="premium-card p-4"><h2 class="heading-fancy"><i class="fas fa-table me-2" style="color:#FF1493;"></i>League Standings 2026</h2><div class="table-responsive"><table class="table-premium w-100" style="border-spacing: 0 4px; margin-bottom: 0;"><thead><tr><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Rank</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Team</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Pld</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">W</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">L</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Pts</th><th style="padding: 6px 12px; font-size:0.8rem; border-bottom: 2px solid #1E2A5E;">Form</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+  // EVENT BINDING
+  function bindGlobalNavigation() { 
+    document.querySelectorAll('[data-page]').forEach(el => { 
+      el.removeEventListener('click', globalNavHandler); 
+      el.addEventListener('click', globalNavHandler); 
+    }); 
+  }
+  function globalNavHandler(e) { 
+    e.preventDefault(); 
+    const page = this.getAttribute('data-page'); 
+    if(page) renderPage(page); 
+  }
+  
+  const observer = new MutationObserver(() => bindGlobalNavigation());
+  observer.observe(document.getElementById('mainContent'), { childList: true, subtree: true });
+  
+  function initLogoutButton() { 
+    const btn = document.getElementById('logoutButton');
+    if (btn) btn.addEventListener('click', logoutUser); 
+  }
+  
+  window.addEventListener('load', () => { 
+    bindGlobalNavigation(); 
+    initModalRegistration(); 
+    initLogoutButton(); 
+    updateLogoutButtonVisibility(); 
+    renderPage("home");
+    document.getElementById('homeNavBtn')?.addEventListener('click', () => renderPage("home"));
+  });
+  
+  document.querySelectorAll('#navMenu .nav-link, .footer-link').forEach(link => { 
+    link.addEventListener('click', (e) => { 
+      e.preventDefault(); 
+      const pg = link.getAttribute('data-page'); 
+      if(pg) renderPage(pg); 
+    }); 
+  });
+</script>
+</body>
+</html>
